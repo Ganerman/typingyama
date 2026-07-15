@@ -72,10 +72,20 @@ export function LandingPage() {
             <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:p-3">
               <div>
                 <p className="inline-flex items-center gap-2 text-sm font-bold text-rush-green"><Code2 className="h-4 w-4" /> Developer Profile</p>
-                <div className="mt-4 grid items-start gap-5 sm:grid-cols-[160px_1fr]">
-                  <div className="relative mx-auto w-full max-w-48 overflow-hidden rounded-xl border border-rush-green/30 bg-rush-ink p-1 shadow-glow sm:mx-0">
-                    <img className="aspect-[4/5] w-full rounded-lg object-cover object-top" src="/assets/developer-fritz-joshua-santiago.jpg" alt="Fritz Joshua Santiago, developer of TypeRush" />
-                    <span className="absolute bottom-3 left-3 rounded-md bg-rush-ink/85 px-2 py-1 text-xs font-bold text-rush-green backdrop-blur">Student Developer</span>
+                <div className="mt-4 grid items-start gap-5 sm:grid-cols-[220px_1fr]">
+                  <div className="mx-auto grid w-full max-w-56 gap-3 sm:mx-0">
+                    <div className="relative overflow-hidden rounded-xl border border-rush-green/30 bg-rush-ink p-1 shadow-glow">
+                      <img className="aspect-[4/5] w-full rounded-lg object-cover object-top" src="/assets/developer-fritz-joshua-santiago.jpg" alt="Fritz Joshua Santiago, developer of TypeRush" />
+                      <span className="absolute bottom-3 left-3 rounded-md bg-rush-ink/85 px-2 py-1 text-xs font-bold text-rush-green backdrop-blur">Student Developer</span>
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-rush-ink/70 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hometown</p>
+                      <p className="mt-1 text-sm font-bold text-white">San Fernando, Bukidnon</p>
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-rush-ink/70 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Development focus</p>
+                      <p className="mt-1 text-sm font-bold text-white">Web &amp; Educational Technology</p>
+                    </div>
                   </div>
                   <div>
                     <h2 className="text-3xl font-black text-white">Fritz Joshua Santiago</h2>

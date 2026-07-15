@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="tile" x1="9" y1="5" x2="54" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6effb1"/>
+      <stop offset="0.48" stop-color="#35f48c"/>
+      <stop offset="1" stop-color="#12ad61"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="12" y1="8" x2="55" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c8ffe0"/>
+      <stop offset="0.45" stop-color="#18cb70"/>
+      <stop offset="1" stop-color="#087343"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#020617" flood-opacity=".55"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#090b12"/>
+  <rect x="5" y="4" width="54" height="54" rx="13" fill="url(#tile)" stroke="url(#edge)" stroke-width="2" filter="url(#shadow)"/>
+  <path d="M13 16.5h38a3.5 3.5 0 0 1 3.5 3.5v25a3.5 3.5 0 0 1-3.5 3.5H13A3.5 3.5 0 0 1 9.5 45V20a3.5 3.5 0 0 1 3.5-3.5Z" fill="#0b1720" stroke="#063c29" stroke-width="1.5"/>
+  <path d="M14 18.5h36" stroke="#9affc7" stroke-width="1.2" stroke-linecap="round" opacity=".65"/>
+  <g fill="#35f48c">
+    <rect x="14" y="23" width="5" height="4" rx="1"/><rect x="21" y="23" width="5" height="4" rx="1"/><rect x="28" y="23" width="5" height="4" rx="1"/><rect x="35" y="23" width="5" height="4" rx="1"/><rect x="42" y="23" width="7" height="4" rx="1"/>
+    <rect x="14" y="29.5" width="7" height="4" rx="1"/><rect x="23" y="29.5" width="5" height="4" rx="1"/><rect x="30" y="29.5" width="5" height="4" rx="1"/><rect x="37" y="29.5" width="5" height="4" rx="1"/><rect x="44" y="29.5" width="5" height="4" rx="1"/>
+    <rect x="14" y="36" width="5" height="4" rx="1"/><rect x="21" y="36" width="5" height="4" rx="1"/><rect x="28" y="36" width="14" height="4" rx="1"/><rect x="44" y="36" width="5" height="4" rx="1"/>
+  </g>
+  <path d="m38 9-5 8h5l-3 7 10-11h-5l3-4h-5Z" fill="#f8fafc" stroke="#0b1720" stroke-width="1" stroke-linejoin="round"/>
+</svg>

@@ -14,7 +14,86 @@ const runningTexts = [
   'responsive web application',
   'clean and readable code',
   'fast accurate typing',
+  'computer hardware device',
+  'operating system update',
+  'secure user password',
+  'wireless internet connection',
+  'local area network',
+  'central processing unit',
+  'random access memory',
+  'solid state storage',
+  'graphics processing unit',
+  'keyboard input device',
+  'digital information system',
+  'software development process',
+  'object oriented programming',
+  'structured query language',
+  'hypertext markup language',
+  'cascading style sheets',
+  'javascript event listener',
+  'python programming language',
+  'version control repository',
+  'command line interface',
+  'application programming interface',
+  'frontend user interface',
+  'backend server logic',
+  'cloud computing service',
+  'virtual machine instance',
+  'encrypted data transfer',
+  'two factor authentication',
+  'network security firewall',
+  'malware detection software',
+  'automatic file backup',
+  'system recovery point',
+  'database primary key',
+  'database foreign key',
+  'normalized table structure',
+  'server request response',
+  'domain name system',
+  'internet protocol address',
+  'dynamic host configuration',
+  'router packet forwarding',
+  'network switch connection',
+  'fiber optic cable',
+  'responsive mobile layout',
+  'accessible website design',
+  'semantic page structure',
+  'browser developer tools',
+  'source code compiler',
+  'runtime error message',
+  'logical condition statement',
+  'reusable program function',
+  'array data collection',
+  'loop control structure',
+  'software testing method',
+  'debugging code issue',
+  'data science workflow',
+  'machine learning model',
+  'artificial intelligence system',
+  'large language model',
+  'data visualization chart',
+  'spreadsheet formula function',
+  'computer science student',
+  'information technology support',
+  'cybersecurity risk assessment',
+  'digital privacy protection',
+  'open source project',
+  'collaborative coding platform',
+  'continuous software improvement',
+  'accurate technical documentation',
+  'professional typing skill',
 ];
+
+const HITS_PER_LEVEL = 5;
+const MAX_CHASE_LEVEL = 10;
+const CHASE_HIT_GOAL = HITS_PER_LEVEL * MAX_CHASE_LEVEL;
+type ChaseDifficulty = 'Beginner' | 'Normal' | 'Expert' | 'Pro';
+const chaseDifficulties: Record<ChaseDifficulty, { multiplier: number; description: string }> = {
+  Beginner: { multiplier: 0.55, description: 'Slow and relaxed' },
+  Normal: { multiplier: 1, description: 'Standard speed' },
+  Expert: { multiplier: 1.35, description: 'Fast challenge' },
+  Pro: { multiplier: 1.75, description: 'Extreme speed' },
+};
 
 export function RacePage() {
   const [typed, setTyped] = useState('');
@@ -70,6 +149,7 @@ function RaceLane({ name, progress, active = false }: { name: string; progress: 
 }
 
 export function WordRainPage() {
+  const [difficulty, setDifficulty] = useState<ChaseDifficulty>('Beginner');
   const [input, setInput] = useState('');
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -80,19 +160,27 @@ export function WordRainPage() {
   const [hits, setHits] = useState(0);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
-  const target = runningTexts[targetIndex] ?? runningTexts[runningTexts.length - 1];
+  const target = runningTexts[targetIndex % runningTexts.length];
   const combo = Math.max(1, Math.floor(score / 80) + 1);
-  const level = Math.floor((hits + misses) / 3) + 1;
-  const runnerSpeed = 0.42 + level * 0.08;
+  const level = Math.min(MAX_CHASE_LEVEL, Math.floor(hits / HITS_PER_LEVEL) + 1);
+  const runnerSpeed = (0.38 + level * 0.14) * chaseDifficulties[difficulty].multiplier;
   const chaserProgress = Math.min(96, 8 + (input.length / target.length) * 88);
-  const totalRounds = runningTexts.length;
+  const runnerTranslate = Math.max(0, Math.min(100, ((runnerProgress - 8) / 88) * 100));
+  const chaserTranslate = Math.max(0, Math.min(100, ((chaserProgress - 8) / 88) * 100));
   const completedRounds = hits + misses;
   const finalAccuracy = completedRounds > 0 ? Math.round((hits / completedRounds) * 100) : 0;
-  const passed = score >= 100 && misses <= 2 && finalAccuracy >= 70;
+  const passed = hits >= CHASE_HIT_GOAL && misses <= 2 && finalAccuracy >= 70;
 
   const advanceRound = useCallback((wasHit: boolean) => {
     if (wasHit) {
-      setHits((current) => current + 1);
+      setHits((current) => {
+        const next = current + 1;
+        if (next >= CHASE_HIT_GOAL) {
+          setFinished(true);
+          setPaused(true);
+        }
+        return next;
+      });
     } else {
       setMisses((current) => current + 1);
       setLives((currentLives) => Math.max(0, currentLives - 1));
@@ -101,14 +189,8 @@ export function WordRainPage() {
     setInput('');
     setRunnerProgress(8);
 
-    if (targetIndex + 1 >= totalRounds) {
-      setFinished(true);
-      setPaused(true);
-      return;
-    }
-
     setTargetIndex((currentTarget) => currentTarget + 1);
-  }, [targetIndex, totalRounds]);
+  }, []);
 
   useEffect(() => {
     if (!started || paused || lives <= 0 || finished) return undefined;
@@ -156,38 +238,40 @@ export function WordRainPage() {
         <h1 className="text-3xl font-black text-white">Apasa ang modagan nga word.</h1>
       </Card>
       <Card>
-        <div className="mb-4 flex flex-wrap gap-4 text-sm font-black">
-          <span>Score {score}</span>
-          <span>Lives {lives}</span>
-          <span>Combo x{combo}</span>
-          <span>Level {level}</span>
-          <span>Hits {hits}</span>
-          <span>Misses {misses}</span>
-          <span>Text {Math.min(completedRounds + 1, totalRounds)}/{totalRounds}</span>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <label className="grid w-full max-w-sm gap-2 text-sm font-bold">Difficulty
+            <select className="rounded-lg border border-white/10 bg-rush-ink px-3 py-3" disabled={started} value={difficulty} onChange={(event) => setDifficulty(event.target.value as ChaseDifficulty)}>
+              {(Object.keys(chaseDifficulties) as ChaseDifficulty[]).map((item) => <option key={item} value={item}>{item} — {chaseDifficulties[item].description}</option>)}
+            </select>
+          </label>
+          <p className="rounded-lg border border-rush-green/20 bg-rush-green/10 px-4 py-3 text-sm font-bold text-rush-green">{level < MAX_CHASE_LEVEL ? `${HITS_PER_LEVEL - (hits % HITS_PER_LEVEL)} hits to Level ${level + 1}` : 'Final Level'}</p>
+        </div>
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+          {[['Score', score], ['Lives', lives], ['Combo', `x${combo}`], ['Level', `${level}/${MAX_CHASE_LEVEL}`], ['Hits', hits], ['Misses', misses], ['Goal', `${hits}/${CHASE_HIT_GOAL}`]].map(([label, value]) => <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-center"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-0.5 font-black text-white">{value}</p></div>)}
         </div>
 
-        <div className="relative overflow-hidden rounded-lg border border-white/10 bg-rush-ink p-5">
-          <div className="absolute bottom-5 right-5 top-5 w-px bg-rush-green/40" />
-          <p className="mb-4 text-xs font-bold uppercase tracking-wide text-slate-400">
+        <div className="relative overflow-hidden rounded-lg border border-white/10 bg-rush-ink p-4 sm:p-5">
+          <div className="absolute bottom-4 right-4 top-4 w-px bg-rush-green/40 sm:bottom-5 sm:right-5 sm:top-5" />
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
             Type the word to catch it before it reaches the finish line
           </p>
 
-          <div className="relative h-24 rounded-lg border border-white/10 bg-white/[0.03]">
+          <div className="relative h-20 rounded-lg border border-white/10 bg-white/[0.03]">
             <span className="absolute left-3 top-3 text-xs font-bold text-slate-500">Target</span>
             <span
-              className="absolute top-11 inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-rush-blue px-4 py-2 font-mono font-black text-rush-ink shadow-blueGlow transition-[left] duration-75 ease-linear will-change-[left]"
-              style={{ left: `${runnerProgress}%` }}
+              className="absolute top-9 inline-flex max-w-[85%] items-center gap-2 whitespace-nowrap rounded-lg bg-rush-blue px-3 py-2 font-mono text-sm font-black text-rush-ink shadow-blueGlow transition-[left,transform] duration-75 ease-linear will-change-transform sm:px-4 sm:text-base"
+              style={{ left: `${runnerProgress}%`, transform: `translateX(-${runnerTranslate}%)` }}
             >
               <Zap className="h-4 w-4" />
               {target}
             </span>
           </div>
 
-          <div className="relative mt-4 h-24 rounded-lg border border-white/10 bg-white/[0.03]">
+          <div className="relative mt-3 h-20 rounded-lg border border-white/10 bg-white/[0.03]">
             <span className="absolute left-3 top-3 text-xs font-bold text-slate-500">User</span>
             <span
-              className="absolute top-11 inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-rush-green px-4 py-2 font-black text-rush-ink shadow-glow transition-[left] duration-100 ease-out will-change-[left]"
-              style={{ left: `${chaserProgress}%` }}
+              className="absolute top-9 inline-flex max-w-[85%] items-center gap-2 whitespace-nowrap rounded-lg bg-rush-green px-3 py-2 text-sm font-black text-rush-ink shadow-glow transition-[left,transform] duration-100 ease-out will-change-transform sm:px-4 sm:text-base"
+              style={{ left: `${chaserProgress}%`, transform: `translateX(-${chaserTranslate}%)` }}
             >
               <Target className="h-4 w-4" />
               {input || 'type'}
@@ -212,7 +296,7 @@ export function WordRainPage() {
           value={input}
           onChange={(event) => type(event.target.value)}
         />
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 flex flex-wrap gap-3">
           <Button disabled={started && !paused} onClick={() => { setStarted(true); setPaused(false); }} icon={<Play className="h-5 w-5" />}>Start</Button>
           <Button variant="secondary" disabled={!started || finished} onClick={() => setPaused((current) => !current)} icon={paused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}>{paused ? 'Resume' : 'Pause'}</Button>
           <Button variant="ghost" onClick={reset} icon={<RotateCcw className="h-5 w-5" />}>Reset</Button>
@@ -238,7 +322,7 @@ export function WordRainPage() {
               <p>Accuracy: <strong>{finalAccuracy}%</strong></p>
             </div>
             <p className="mt-3 text-sm text-slate-400">
-              Passing rule: at least 100 score, 70% accuracy, and not more than 2 misses.
+              Level increases every {HITS_PER_LEVEL} hits. Reach {CHASE_HIT_GOAL} hits to complete Level {MAX_CHASE_LEVEL}.
             </p>
           </div>
         )}

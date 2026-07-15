@@ -1,4 +1,4 @@
-import { Copy, Flag, Gauge, Link2, Play, RotateCcw, Trophy, Users, Zap } from 'lucide-react';
+import { Copy, Flag, Gauge, Link2, LogOut, Play, RotateCcw, Trophy, UserX, Users, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Button } from '../components/ui/Button';
@@ -128,6 +128,27 @@ export function MultiplayerRacePage() {
     if (mode === 'quick') setRacers([]);
   };
 
+  const leaveRoom = async (message = '') => {
+    const channel = channelRef.current;
+    channelRef.current = null;
+    if (channel && supabase) {
+      await channel.untrack();
+      await supabase.removeChannel(channel);
+    }
+    setConnected(false);
+    setIsHost(false);
+    setMode('quick');
+    setRacers([]);
+    setRoomCode(makeRoomCode());
+    setJoinCode('');
+    setRoomError(message);
+  };
+
+  const kickPlayer = (racer: Racer) => {
+    if (!isHost || !channelRef.current) return;
+    void channelRef.current.send({ type: 'broadcast', event: 'kick', payload: { id: racer.id } });
+  };
+
   const beginCountdown = (remote = false) => {
     setTyped('');
     setErrors(0);
@@ -171,7 +192,13 @@ export function MultiplayerRacePage() {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState<{ name: string; avatarIndex: number }>();
-        const present = Object.entries(state).flatMap(([id, entries]) => entries.map((entry) => ({ id, name: entry.name, progress: 0, wpm: 0, accuracy: 100, avatarIndex: entry.avatarIndex })));
+        // A presence key can temporarily contain several metas when track() is
+        // called again (for example after choosing another avatar). It is still
+        // one browser/player, so only render its latest presence entry.
+        const present = Object.entries(state).flatMap(([id, entries]) => {
+          const entry = entries[entries.length - 1];
+          return entry ? [{ id, name: entry.name, progress: 0, wpm: 0, accuracy: 100, avatarIndex: entry.avatarIndex }] : [];
+        });
         if (present.length > 5) setRoomError('Room is full. Private rooms allow a maximum of 5 players.');
         setRacers((current) => present.filter((racer) => racer.id !== playerId).map((racer) => current.find((item) => item.id === racer.id) ?? racer));
       })
@@ -181,10 +208,12 @@ export function MultiplayerRacePage() {
         setLanguage(payload.language as TestLanguage);
         beginCountdown(true);
       })
-      .subscribe(async (state) => {
+      .on('broadcast', { event: 'kick' }, ({ payload }) => {
+        if (payload.id === playerId) void leaveRoom('You were removed from the lobby by the host.');
+      })
+      .subscribe((state) => {
         if (state === 'SUBSCRIBED') {
           setConnected(true);
-          await channel.track({ name: playerName, avatarIndex: selectedAvatar });
         }
       });
     channelRef.current = channel;
@@ -234,6 +263,7 @@ export function MultiplayerRacePage() {
             </label>
             {isSupabaseConfigured ? (
               <>
+                {roomError && !connected && <p className="mt-4 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-200">{roomError}</p>}
                 <Button className="mt-5 w-full" variant="secondary" disabled={!nickname.trim()} onClick={() => connectRoom(makeRoomCode(), true)} icon={<Link2 className="h-5 w-5" />}>Create Private Room</Button>
                 <div className="mt-3 flex gap-2">
                   <input className="min-w-0 flex-1 rounded-lg border border-white/10 bg-rush-ink px-4 font-mono uppercase" maxLength={5} placeholder="ROOM CODE" value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} />
@@ -247,12 +277,15 @@ export function MultiplayerRacePage() {
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="text-sm text-slate-400">Private room</p><p className="font-mono text-3xl font-black text-white">{roomCode}</p></div>
-              <Button variant="ghost" icon={<Copy className="h-4 w-4" />} onClick={() => void navigator.clipboard.writeText(roomCode)}>Copy Code</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="ghost" icon={<Copy className="h-4 w-4" />} onClick={() => void navigator.clipboard.writeText(roomCode)}>Copy Code</Button>
+                <Button variant="ghost" icon={<LogOut className="h-4 w-4" />} onClick={() => void leaveRoom()}>Leave Lobby</Button>
+              </div>
             </div>
             <p className="mt-4 font-bold text-rush-green">{racers.length + 1} racer(s) connected</p>
             {roomError && <p className="mt-3 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-200">{roomError}</p>}
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {[{ id: playerId, name: playerName, avatarIndex: selectedAvatar, isPlayer: true }, ...racers].slice(0, 5).map((racer) => <LobbyPlayer key={racer.id} name={racer.name} avatarIndex={racer.avatarIndex ?? 0} isPlayer={racer.isPlayer} />)}
+              {[{ id: playerId, name: playerName, avatarIndex: selectedAvatar, isPlayer: true }, ...racers].slice(0, 5).map((racer) => <LobbyPlayer key={racer.id} name={racer.name} avatarIndex={racer.avatarIndex ?? 0} isPlayer={racer.isPlayer} onKick={isHost && !racer.isPlayer ? () => kickPlayer(racer as Racer) : undefined} />)}
             </div>
             {isHost ? <><RaceOptions difficulty={difficulty} language={language} setDifficulty={setDifficulty} setLanguage={setLanguage} /><p className="mt-4 text-sm text-slate-400">Timed race: {FRIEND_RACE_SECONDS} seconds · 2–5 players · Top 4 ranking</p><Button className="mt-3" disabled={racers.length + 1 < 2 || racers.length + 1 > 5} onClick={() => beginCountdown()}>Play ({racers.length + 1}/5)</Button>{racers.length === 0 && <p className="mt-2 text-xs text-amber-200">Waiting for at least one friend to join.</p>}</> : <p className="mt-4 text-slate-300">Waiting for the host to press Play…</p>}
           </Card>
@@ -315,9 +348,9 @@ function RaceLane({ racer, position }: { racer: Racer; position: number }) {
   return <div><div className="mb-1 flex justify-between text-sm"><span className={`font-bold ${racer.isPlayer ? 'text-rush-green' : 'text-white'}`}>#{position} {racer.name}{racer.isPlayer ? ' (You)' : ''}</span><span className="text-slate-400"><Gauge className="mr-1 inline h-4 w-4" />{racer.wpm} WPM · {Math.round(racer.progress)}%</span></div><div className="relative h-14 overflow-hidden rounded-lg border border-white/10 bg-white/5"><div className="absolute bottom-0 top-0 right-4 w-px bg-rush-green/40" /><div className={`absolute top-1 h-12 w-12 overflow-hidden rounded-full border-2 transition-[left] duration-100 ${racer.isPlayer ? 'border-rush-green shadow-glow' : 'border-rush-blue shadow-blueGlow'}`} style={{ left: `calc(${Math.max(4, Math.min(racer.progress, 96))}% - 1.5rem)`, backgroundImage: "url('/assets/ninja-racers.png')", backgroundSize: '200% 200%', backgroundPosition: positions[avatarIndex] }}><span className="sr-only">{racer.name} ninja racer</span></div></div></div>;
 }
 
-function LobbyPlayer({ name, avatarIndex, isPlayer = false }: { name: string; avatarIndex: number; isPlayer?: boolean }) {
+function LobbyPlayer({ name, avatarIndex, isPlayer = false, onKick }: { name: string; avatarIndex: number; isPlayer?: boolean; onKick?: () => void }) {
   const positions = ['0% 0%', '100% 0%', '0% 100%', '100% 100%'];
-  return <div className={`flex items-center gap-3 rounded-lg border p-3 ${isPlayer ? 'border-rush-green/40 bg-rush-green/10' : 'border-white/10 bg-white/5'}`}><span className="h-11 w-11 shrink-0 rounded-full border border-white/20 bg-cover" style={{ backgroundImage: "url('/assets/ninja-racers.png')", backgroundSize: '200% 200%', backgroundPosition: positions[avatarIndex] ?? positions[0] }} /><div className="min-w-0"><p className="truncate font-bold text-white">{name}</p><p className="text-xs text-slate-400">{isPlayer ? 'You' : 'Ready'}</p></div></div>;
+  return <div className={`flex items-center gap-3 rounded-lg border p-3 ${isPlayer ? 'border-rush-green/40 bg-rush-green/10' : 'border-white/10 bg-white/5'}`}><span className="h-11 w-11 shrink-0 rounded-full border border-white/20 bg-cover" style={{ backgroundImage: "url('/assets/ninja-racers.png')", backgroundSize: '200% 200%', backgroundPosition: positions[avatarIndex] ?? positions[0] }} /><div className="min-w-0 flex-1"><p className="truncate font-bold text-white">{name}</p><p className="text-xs text-slate-400">{isPlayer ? 'You' : 'Ready'}</p></div>{onKick && <button type="button" title={`Kick ${name}`} aria-label={`Kick ${name} from lobby`} onClick={onKick} className="focus-ring rounded-lg border border-rose-400/30 bg-rose-500/10 p-2 text-rose-300 transition hover:bg-rose-500/20"><UserX className="h-4 w-4" /></button>}</div>;
 }
 
 function AvatarPicker({ selected, onSelect }: { selected: number; onSelect: (index: number) => void }) {

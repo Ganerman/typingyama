@@ -1,4 +1,4 @@
-import { BarChart3, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
+import { BarChart3, BookOpen, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +12,7 @@ const links = [
   { to: '/boss-battle', label: 'Boss Battle', icon: Skull },
   { to: '/code', label: 'Code Mode', icon: Code2 },
   { to: '/student', label: 'Student Mode', icon: BarChart3 },
+  { to: '/library', label: 'IT Library', icon: BookOpen },
   { to: '/daily', label: 'Daily Challenge', icon: Trophy },
   { to: '/leaderboard', label: 'Leaderboard', icon: Crown },
   { to: '/achievements', label: 'Achievements', icon: Trophy },
@@ -26,11 +27,11 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
-      <aside className="border-b border-white/10 bg-rush-ink/85 p-4 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+      <aside className="border-b border-white/10 bg-rush-ink/85 p-4 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="mb-6 flex items-center justify-between">
           <Logo />
-          <button className="focus-ring rounded-lg border border-white/10 px-3 py-2 text-xs font-bold lg:hidden" onClick={toggleTheme}>
-            {theme}
+          <button aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="focus-ring rounded-lg border border-white/10 px-3 py-2 text-xs font-bold lg:hidden" onClick={toggleTheme} type="button">
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
         </div>
         <nav className="grid grid-cols-2 gap-2 lg:grid-cols-1">
@@ -57,7 +58,7 @@ export function AppLayout() {
             <h1 className="text-lg font-black text-white">{profile.username}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button className="focus-ring hidden rounded-lg border border-white/10 px-3 py-2 text-sm font-bold text-slate-200 lg:inline-flex" onClick={toggleTheme}>
+            <button aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="focus-ring hidden rounded-lg border border-white/10 px-3 py-2 text-sm font-bold text-slate-200 lg:inline-flex" onClick={toggleTheme} type="button">
               {theme === 'dark' ? 'Light' : 'Dark'}
             </button>
           </div>

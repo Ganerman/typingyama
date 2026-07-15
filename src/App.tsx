@@ -7,6 +7,7 @@ import { AchievementsPage, DailyChallengePage, HistoryPage, LeaderboardPage, Pro
 import { LandingPage } from './pages/LandingPage';
 import { TypingTestPage } from './pages/TypingTestPage';
 import { BossBattlePage } from './pages/BossBattlePage';
+import { LearningLibraryPage } from './pages/LearningLibraryPage';
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
         <Route path="/boss-battle" element={<BossBattlePage />} />
         <Route path="/code" element={<CodeModePage />} />
         <Route path="/student" element={<StudentModePage />} />
+        <Route path="/library" element={<LearningLibraryPage />} />
         <Route path="/daily" element={<DailyChallengePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/achievements" element={<AchievementsPage />} />

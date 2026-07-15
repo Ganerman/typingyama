@@ -25,9 +25,83 @@ body {
   letter-spacing: 0;
 }
 
-.light body,
-.light :root {
+:root.light {
   color-scheme: light;
+}
+
+:root.light body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(16, 185, 129, 0.1), transparent 28rem),
+    radial-gradient(circle at 88% 4%, rgba(14, 165, 233, 0.1), transparent 30rem),
+    linear-gradient(135deg, #f8fafc 0%, #f1f5f9 52%, #e8eef7 100%);
+  color: #0f172a;
+}
+
+/* The application was designed with dark Tailwind utilities. These mappings
+   keep the same component structure while giving light mode real contrast. */
+:root.light .panel {
+  border-color: rgba(148, 163, 184, 0.35);
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 25px -5px rgba(148, 163, 184, 0.18), 0 8px 10px -6px rgba(148, 163, 184, 0.18);
+}
+
+:root.light .bg-rush-ink,
+:root.light .bg-rush-ink\/70,
+:root.light .bg-rush-ink\/75,
+:root.light .bg-rush-ink\/85 {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+:root.light .bg-white\/5,
+:root.light .bg-white\/\[0\.03\],
+:root.light .bg-white\/\[0\.055\],
+:root.light .bg-white\/10 {
+  background-color: rgba(226, 232, 240, 0.62);
+}
+
+:root.light .border-white\/10,
+:root.light .border-white\/20 {
+  border-color: rgba(100, 116, 139, 0.28);
+}
+
+:root.light .text-white,
+:root.light .text-slate-100,
+:root.light .text-slate-200 {
+  color: #0f172a;
+}
+
+:root.light .text-slate-300 {
+  color: #334155;
+}
+
+:root.light .text-slate-400 {
+  color: #475569;
+}
+
+:root.light .text-slate-500,
+:root.light .text-slate-600 {
+  color: #64748b;
+}
+
+:root.light .hover\:bg-white\/10:hover {
+  background-color: rgba(203, 213, 225, 0.65);
+}
+
+:root.light .hover\:text-white:hover {
+  color: #020617;
+}
+
+:root.light input,
+:root.light select,
+:root.light textarea {
+  color: #0f172a;
+}
+
+body,
+.panel,
+aside,
+header {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
 ::selection {

@@ -104,6 +104,78 @@ header {
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
+.nav-icon-3d {
+  position: relative;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 0.6rem;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(145deg, #273449 0%, #131b2a 48%, #080c14 100%);
+  color: #b9c5d6;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.55),
+    0 4px 8px rgba(0, 0, 0, 0.38),
+    0 1px 1px rgba(0, 0, 0, 0.7);
+  transform: translateY(-1px);
+  transition: transform 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.nav-icon-3d::after {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  left: 5px;
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  content: '';
+}
+
+a:hover > .nav-icon-3d {
+  border-color: rgba(66, 199, 255, 0.5);
+  color: #e0f2fe;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.2),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+    0 5px 12px rgba(66, 199, 255, 0.18),
+    0 2px 2px rgba(0, 0, 0, 0.65);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.nav-link-active .nav-icon-3d {
+  border-color: rgba(255, 255, 255, 0.38);
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.48), transparent 25%),
+    linear-gradient(145deg, #1bd87c 0%, #0d9f59 52%, #075d38 100%);
+  color: #06170f;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -2px -3px 5px rgba(0, 52, 29, 0.48),
+    0 5px 10px rgba(0, 86, 47, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+:root.light .nav-icon-3d {
+  border-color: rgba(100, 116, 139, 0.32);
+  background:
+    radial-gradient(circle at 28% 20%, #fff, transparent 30%),
+    linear-gradient(145deg, #f8fafc 0%, #dbe4ef 55%, #b7c4d4 100%);
+  color: #334155;
+  box-shadow: inset 1px 1px 0 #fff, inset -2px -2px 4px rgba(71, 85, 105, 0.2), 0 4px 8px rgba(71, 85, 105, 0.2);
+}
+
+:root.light .nav-link-active .nav-icon-3d {
+  background: radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.7), transparent 27%), linear-gradient(145deg, #45f29a, #16b96b 55%, #087844);
+  color: #052e1d;
+}
+
 ::selection {
   background: rgba(53, 244, 140, 0.35);
 }

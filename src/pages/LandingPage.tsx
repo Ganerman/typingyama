@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Gamepad2, Keyboard, Medal, Rocket, Trophy } from 'lucide-react';
+import { BookOpenCheck, Code2, Gamepad2, Keyboard, Medal, Rocket, Target, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 import { Logo } from '../components/Logo';
@@ -65,6 +65,57 @@ export function LandingPage() {
               <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
             </Card>
           ))}
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-10">
+          <Card className="overflow-hidden bg-gradient-to-br from-rush-green/10 via-white/[0.03] to-rush-blue/10">
+            <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:p-3">
+              <div>
+                <p className="inline-flex items-center gap-2 text-sm font-bold text-rush-green"><Code2 className="h-4 w-4" /> Developer Profile</p>
+                <div className="mt-4 grid items-start gap-5 sm:grid-cols-[160px_1fr]">
+                  <div className="relative mx-auto w-full max-w-48 overflow-hidden rounded-xl border border-rush-green/30 bg-rush-ink p-1 shadow-glow sm:mx-0">
+                    <img className="aspect-[4/5] w-full rounded-lg object-cover object-top" src="/assets/developer-fritz-joshua-santiago.jpg" alt="Fritz Joshua Santiago, developer of TypeRush" />
+                    <span className="absolute bottom-3 left-3 rounded-md bg-rush-ink/85 px-2 py-1 text-xs font-bold text-rush-green backdrop-blur">Student Developer</span>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-white">Fritz Joshua Santiago</h2>
+                    <p className="mt-1 font-bold text-rush-green">Student Developer &amp; IT Enthusiast</p>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div className="grid min-h-36 place-items-center rounded-lg border border-white/10 bg-rush-ink/70 p-3 text-center">
+                        <img className="h-24 w-24 rounded-full border border-white/20 object-cover shadow-lg" src="/assets/college-information-technology-logo.jpg" alt="College of Information Technology logo" />
+                        <p className="mt-2 text-xs font-bold leading-4 text-rush-blue">College of Information Technology</p>
+                      </div>
+                      <div className="grid min-h-36 place-items-center rounded-lg border border-white/10 bg-rush-ink/70 p-3 text-center">
+                        <img className="h-24 w-full object-contain drop-shadow-lg" src="/assets/iba-college-of-mindanao-logo.png" alt="IBA College of Mindanao Inc. logo" />
+                        <p className="mt-2 text-xs font-bold leading-4 text-rush-blue">IBA College of Mindanao Inc.</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 font-bold text-rush-blue">College of Information Technology Student</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-400">Valencia City, Bukidnon</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">Fritz Joshua Santiago is an Information Technology student at IBA College of Mindanao Inc. in Valencia City. Originally from San Fernando, Bukidnon, he is passionate about web development, interactive learning tools, and using technology to solve practical problems.</p>
+                  </div>
+                </div>
+                <h3 className="mt-6 text-xl font-black text-white">Building practical technology for better learning.</h3>
+                <p className="mt-3 leading-7 text-slate-300">TypeRush reflects his commitment to creating a useful and engaging educational experience. The platform combines structured typing practice, programming-related content, performance tracking, and interactive game modes to help learners develop speed, accuracy, and confidence.</p>
+                <p className="mt-3 leading-7 text-slate-300">His vision is to keep TypeRush free, accessible, and account-optional so students, aspiring IT professionals, programmers, and everyday computer users can strengthen essential keyboard skills at their own pace.</p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link to="/student"><Button icon={<BookOpenCheck className="h-5 w-5" />}>Explore Student Lessons</Button></Link>
+                  <Link to="/library"><Button variant="ghost">Open IT Library</Button></Link>
+                </div>
+              </div>
+              <div>
+                <p className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">How to use TypeRush</p>
+                <div className="grid gap-3">
+                  {[
+                    { number: '01', title: 'Choose your practice', text: 'Start with a classic test, student lesson, code exercise, or arcade game.' },
+                    { number: '02', title: 'Focus on accuracy', text: 'Build a steady rhythm first. Speed improves naturally when mistakes decrease.' },
+                    { number: '03', title: 'Track your improvement', text: 'Review your WPM, accuracy, scores, levels, history, and personal bests.' },
+                  ].map((step) => <div key={step.number} className="flex gap-4 rounded-lg border border-white/10 bg-rush-ink/70 p-4"><span className="font-mono text-xl font-black text-rush-green">{step.number}</span><div><h3 className="font-black text-white">{step.title}</h3><p className="mt-1 text-sm leading-6 text-slate-300">{step.text}</p></div></div>)}
+                </div>
+                <p className="mt-4 flex items-center gap-2 text-sm text-slate-400"><Target className="h-4 w-4 text-rush-blue" /> Practice consistently—even ten focused minutes a day can make a difference.</p>
+              </div>
+            </div>
+          </Card>
         </section>
 
         <section className="mx-auto grid max-w-7xl gap-4 px-4 py-10 lg:grid-cols-[1fr_1.2fr]">

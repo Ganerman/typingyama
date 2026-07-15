@@ -1,5 +1,5 @@
-import { BarChart3, BookOpen, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { ArrowLeft, BarChart3, BookOpen, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -34,18 +34,22 @@ export function AppLayout() {
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
         </div>
+        <Link className="focus-ring mb-4 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-slate-300 transition hover:bg-white/10 hover:text-white" to="/">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Back to Landing Page
+        </Link>
         <nav className="grid grid-cols-2 gap-2 lg:grid-cols-1">
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
-                `focus-ring flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition ${
-                  isActive ? 'bg-rush-green text-rush-ink shadow-glow' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                `focus-ring flex min-h-12 items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-bold transition ${
+                  isActive ? 'nav-link-active bg-rush-green text-rush-ink shadow-glow' : 'text-slate-300 hover:bg-white/10 hover:text-white'
                 }`
               }
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <span className="nav-icon-3d" aria-hidden="true"><Icon className="h-4 w-4" strokeWidth={2.35} /></span>
               {label}
             </NavLink>
           ))}

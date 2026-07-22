@@ -2,6 +2,25 @@ import type { TypingResult, UserProfile } from '../types';
 
 const resultsKey = 'typerush-results';
 const profileKey = 'typerush-profile';
+const dailyKey = 'typerush-daily-progress';
+
+export interface DailyProgress {
+  completedDate: string | null;
+  lastPlayedDate: string | null;
+  streak: number;
+  longestStreak: number;
+  bestWpm: number;
+  bestAccuracy: number;
+}
+
+const emptyDailyProgress: DailyProgress = {
+  completedDate: null,
+  lastPlayedDate: null,
+  streak: 0,
+  longestStreak: 0,
+  bestWpm: 0,
+  bestAccuracy: 0,
+};
 
 export const getLocalResults = (): TypingResult[] => {
   const raw = localStorage.getItem(resultsKey);
@@ -29,4 +48,18 @@ export const getLocalProfile = <T extends UserProfile>(fallback: T): T => {
 
 export const saveLocalProfile = (profile: UserProfile): void => {
   localStorage.setItem(profileKey, JSON.stringify(profile));
+};
+
+export const getDailyProgress = (): DailyProgress => {
+  const raw = localStorage.getItem(dailyKey);
+  if (!raw) return emptyDailyProgress;
+  try {
+    return { ...emptyDailyProgress, ...(JSON.parse(raw) as Partial<DailyProgress>) };
+  } catch {
+    return emptyDailyProgress;
+  }
+};
+
+export const saveDailyProgress = (progress: DailyProgress): void => {
+  localStorage.setItem(dailyKey, JSON.stringify(progress));
 };

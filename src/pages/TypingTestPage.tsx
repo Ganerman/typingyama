@@ -10,6 +10,7 @@ import { typingTexts } from '../data/typingTexts';
 import { saveLocalResult } from '../services/storage';
 import type { Difficulty, TestLanguage, TypingResult } from '../types';
 import { calculateAccuracy, calculateRawWpm, calculateWpm, calculateXp, detectPersonalBest, getRankProgress } from '../utils/calculations';
+import { shareTypingResult } from '../utils/shareResult';
 
 const durations = [15, 30, 60, 120];
 const difficulties: Difficulty[] = ['Easy', 'Medium', 'Hard', 'Expert'];
@@ -27,6 +28,7 @@ export function TypingTestPage() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<TypingResult | null>(null);
+  const [shareMessage, setShareMessage] = useState('');
   const previousBestWpm = useRef(profile.bestWpm);
   const [, setTick] = useState(0);
 
@@ -116,6 +118,7 @@ export function TypingTestPage() {
     setStartedAt(null);
     setFinished(false);
     setResult(null);
+    setShareMessage('');
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -166,9 +169,10 @@ export function TypingTestPage() {
         </Card>
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" onClick={restart}>Try Another Mode</Button>
-          <Button variant="ghost" icon={<Share2 className="h-5 w-5" />} onClick={() => void navigator.clipboard?.writeText(`I typed ${result.wpm} WPM at ${result.accuracy}% on TypeRush!`)}>
+          <Button variant="ghost" icon={<Share2 className="h-5 w-5" />} onClick={() => void shareTypingResult(result).then((action) => setShareMessage(action === 'shared' ? 'Result shared!' : 'Result card saved!')).catch(() => setShareMessage('Sharing was cancelled.'))}>
             Share Result
           </Button>
+          {shareMessage && <p className="self-center text-sm text-rush-blue">{shareMessage}</p>}
         </div>
       </div>
     );

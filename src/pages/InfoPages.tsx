@@ -1,5 +1,5 @@
-import { Save } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { Clock, Flame, Play, RotateCcw, Save, Share2, Trophy } from 'lucide-react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 import { WeeklyChart } from '../components/Charts';
 import { Button } from '../components/ui/Button';
@@ -9,33 +9,147 @@ import { RankBadge } from '../components/ui/RankBadge';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { achievements, leaderboard, weeklyProgress } from '../data/mockData';
-import { getLocalResults } from '../services/storage';
+import { typingTexts } from '../data/typingTexts';
+import { getDailyProgress, getLocalResults, saveDailyProgress, saveLocalResult } from '../services/storage';
+import type { TypingResult } from '../types';
+import { calculateAccuracy, calculateRawWpm, calculateWpm } from '../utils/calculations';
+import { shareTypingResult } from '../utils/shareResult';
+
+const DAILY_SECONDS = 90;
+const DAILY_WPM = 35;
+const DAILY_ACCURACY = 90;
+const DAILY_XP = 120;
+const DAILY_COINS = 45;
+
+const localDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export function DailyChallengePage() {
-  const [completed, setCompleted] = useState(localStorage.getItem('typerush-daily') === new Date().toDateString());
-  const progress = completed ? 100 : 0;
+  const { profile, updateProfile } = useAuth();
+  const today = localDateKey();
+  const initialProgress = useRef(getDailyProgress());
+  const passages = typingTexts.Cebuano.Medium;
+  const passageIndex = Array.from(today).reduce((sum, char) => sum + char.charCodeAt(0), 0) % passages.length;
+  const targetText = useMemo(() => passages[passageIndex], [passageIndex, passages]);
+  const [dailyProgress, setDailyProgress] = useState(initialProgress.current);
+  const [typed, setTyped] = useState('');
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [result, setResult] = useState<TypingResult | null>(null);
+  const [message, setMessage] = useState('');
+  const [, setTick] = useState(0);
+  const resultRef = useRef<TypingResult | null>(null);
+  const completed = dailyProgress.completedDate === today;
+  const elapsed = startedAt ? Math.min(DAILY_SECONDS, (Date.now() - startedAt) / 1000) : 0;
+  const remaining = Math.max(0, Math.ceil(DAILY_SECONDS - elapsed));
+  const correct = typed.split('').filter((char, index) => char === targetText[index]).length;
+  const accuracy = calculateAccuracy(correct, typed.length);
+  const wpm = calculateWpm(correct, Math.max(1, elapsed));
+  const typingProgress = Math.min(100, (typed.length / targetText.length) * 100);
+
+  const finish = (finalTyped: string, timedOut: boolean) => {
+    if (!startedAt || resultRef.current) return;
+    const finalElapsed = Math.max(1, timedOut ? DAILY_SECONDS : (Date.now() - startedAt) / 1000);
+    const finalCorrect = finalTyped.split('').filter((char, index) => char === targetText[index]).length;
+    const finalAccuracy = calculateAccuracy(finalCorrect, finalTyped.length);
+    const finalWpm = calculateWpm(finalCorrect, finalElapsed);
+    const passed = !timedOut && finalTyped.length >= targetText.length && finalWpm >= DAILY_WPM && finalAccuracy >= DAILY_ACCURACY;
+    const firstCompletionToday = passed && !completed;
+    const nextResult: TypingResult = {
+      mode: 'Daily Challenge', difficulty: 'Medium', language: 'Cebuano', duration: Math.round(finalElapsed),
+      wpm: finalWpm, rawWpm: calculateRawWpm(finalTyped.length, finalElapsed), accuracy: finalAccuracy,
+      correctCharacters: finalCorrect, incorrectCharacters: finalTyped.length - finalCorrect,
+      totalCharacters: finalTyped.length, xpEarned: firstCompletionToday ? DAILY_XP : 0, passed,
+      completedAt: new Date().toISOString(), speedSeries: [],
+    };
+    resultRef.current = nextResult;
+    setResult(nextResult);
+    saveLocalResult(nextResult);
+
+    if (firstCompletionToday) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const nextStreak = dailyProgress.lastPlayedDate === localDateKey(yesterday) ? dailyProgress.streak + 1 : 1;
+      const nextDaily = {
+        completedDate: today, lastPlayedDate: today, streak: nextStreak,
+        longestStreak: Math.max(dailyProgress.longestStreak, nextStreak),
+        bestWpm: Math.max(dailyProgress.bestWpm, finalWpm),
+        bestAccuracy: Math.max(dailyProgress.bestAccuracy, finalAccuracy),
+      };
+      saveDailyProgress(nextDaily);
+      setDailyProgress(nextDaily);
+      updateProfile({
+        ...profile, totalXp: profile.totalXp + DAILY_XP, coins: profile.coins + DAILY_COINS,
+        currentStreak: nextStreak, longestStreak: Math.max(profile.longestStreak, nextStreak),
+        bestWpm: Math.max(profile.bestWpm, finalWpm), bestAccuracy: Math.max(profile.bestAccuracy, finalAccuracy),
+        averageWpm: Math.round((profile.averageWpm + finalWpm) / 2), totalTests: profile.totalTests + 1,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!startedAt || result) return undefined;
+    const timer = window.setInterval(() => {
+      setTick((value) => value + 1);
+      if ((Date.now() - startedAt) / 1000 >= DAILY_SECONDS) finish(typed, true);
+    }, 250);
+    return () => window.clearInterval(timer);
+  });
+
+  const handleTyping = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    if (completed || result) return;
+    const value = event.target.value.slice(0, targetText.length);
+    if (!startedAt) setStartedAt(Date.now());
+    setTyped(value);
+    if (value.length === targetText.length) window.setTimeout(() => finish(value, false), 0);
+  };
+
+  const retry = () => {
+    resultRef.current = null;
+    setTyped('');
+    setStartedAt(null);
+    setResult(null);
+    setMessage('');
+  };
+
   return (
     <div className="grid gap-5">
       <Card>
         <p className="text-sm font-bold text-rush-green">Daily Challenge</p>
-        <h1 className="text-3xl font-black text-white">One challenge. One reward per day.</h1>
+        <h1 className="text-3xl font-black text-white">Bisaya challenge kada adlaw.</h1>
+        <p className="mt-2 text-slate-300">Kompletoha ang passage, labaw sa {DAILY_WPM} WPM ug {DAILY_ACCURACY}% accuracy.</p>
       </Card>
       <Card>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="rounded-lg bg-rush-ink p-5 font-mono leading-8 text-slate-300">Students who practice with clear goals and steady concentration develop speed, accuracy, and confidence across every digital task. Consistent keyboard training makes it easier to prepare reports, communicate ideas, write reliable programs, and collaborate with classmates under a limited amount of time.</p>
-            <div className="mt-4 grid gap-2 text-sm text-slate-300">
-              <p>Required WPM: <strong className="text-white">65</strong></p>
-              <p>Required accuracy: <strong className="text-white">94%</strong></p>
-              <p>Rewards: <strong className="text-rush-green">120 XP + 45 coins</strong></p>
-              <p>Next challenge: <strong className="text-rush-blue">00:00 local midnight</strong></p>
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <p className="rounded-lg bg-white/5 p-3 text-center"><strong className="block text-rush-green">{startedAt ? wpm : 0}</strong><span className="text-xs text-slate-400">WPM</span></p>
+              <p className="rounded-lg bg-white/5 p-3 text-center"><strong className="block text-rush-blue">{accuracy}%</strong><span className="text-xs text-slate-400">Accuracy</span></p>
+              <p className="rounded-lg bg-white/5 p-3 text-center"><strong className="block text-white">{remaining}s</strong><span className="text-xs text-slate-400">Time</span></p>
+              <p className="rounded-lg bg-white/5 p-3 text-center"><strong className="block text-orange-300">{dailyProgress.streak}</strong><span className="text-xs text-slate-400">Streak</span></p>
             </div>
-            <div className="mt-4"><ProgressBar value={progress} /></div>
-            <Button className="mt-4" disabled={completed} onClick={() => { localStorage.setItem('typerush-daily', new Date().toDateString()); setCompleted(true); }}>{completed ? 'Reward Claimed' : 'Mark Complete'}</Button>
+            <div className="rounded-lg bg-rush-ink p-5 font-mono leading-8">
+              {targetText.split('').map((char, index) => <span key={`${char}-${index}`} className={typed[index] === undefined ? 'text-slate-500' : typed[index] === char ? 'text-rush-green' : 'bg-rose-500/30 text-rose-100'}>{char}</span>)}
+            </div>
+            <ProgressBar value={completed ? 100 : typingProgress} label="Challenge progress" />
+            <textarea autoFocus aria-label="Daily challenge typing input" className="mt-4 min-h-32 w-full resize-none rounded-lg border border-white/10 bg-white/5 p-4 font-mono" disabled={completed || Boolean(result)} value={typed} onChange={handleTyping} onPaste={(event) => event.preventDefault()} placeholder={completed ? 'Nahuman na nimo ang challenge karong adlawa.' : 'Sugdi og type—automatic magsugod ang timer.'} />
+            <div className="mt-4 grid gap-2 text-sm text-slate-300">
+              <p>Required WPM: <strong className="text-white">{DAILY_WPM}</strong></p>
+              <p>Required accuracy: <strong className="text-white">{DAILY_ACCURACY}%</strong></p>
+              <p>Rewards: <strong className="text-rush-green">120 XP + 45 coins</strong></p>
+              <p>Reset: <strong className="text-rush-blue">local midnight</strong></p>
+            </div>
+            {!startedAt && !completed && <Button className="mt-4" icon={<Play className="h-4 w-4" />} onClick={() => setStartedAt(Date.now())}>Start Challenge</Button>}
+            {result && <div className={`mt-4 rounded-lg border p-4 ${result.passed ? 'border-rush-green/40 bg-rush-green/10' : 'border-rose-400/40 bg-rose-500/10'}`}><h2 className="text-xl font-black text-white">{result.passed ? 'Pasar ka!' : 'Sulayi pag-usab!'}</h2><p className="mt-1 text-sm text-slate-300">{result.wpm} WPM • {result.accuracy}% accuracy {result.xpEarned ? `• +${result.xpEarned} XP` : ''}</p><div className="mt-3 flex flex-wrap gap-2"><Button variant="ghost" icon={<RotateCcw className="h-4 w-4" />} disabled={completed} onClick={retry}>Retry</Button><Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => void shareTypingResult(result).then((action) => setMessage(action === 'shared' ? 'Na-share na!' : 'Na-save na ang result card!')).catch(() => setMessage('Wala nadayon ang pag-share.'))}>Share Result</Button></div>{message && <p className="mt-2 text-sm text-rush-blue">{message}</p>}</div>}
+            {completed && !result && <p className="mt-4 rounded-lg border border-rush-green/30 bg-rush-green/10 p-4 font-bold text-rush-green"><Trophy className="mr-2 inline h-5 w-5" />Reward claimed na karong adlawa. Balik ugma!</p>}
           </div>
           <div>
-            <h2 className="mb-3 text-xl font-black text-white">Daily Leaderboard</h2>
+            <h2 className="mb-3 text-xl font-black text-white">Daily Leaders</h2>
             <LeaderboardTable entries={leaderboard.slice(0, 3)} />
+            <div className="mt-4 grid gap-3 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-slate-300"><p><Flame className="mr-2 inline h-4 w-4 text-orange-300" />Current streak: <strong className="text-white">{dailyProgress.streak} days</strong></p><p><Trophy className="mr-2 inline h-4 w-4 text-rush-green" />Longest streak: <strong className="text-white">{dailyProgress.longestStreak} days</strong></p><p><Clock className="mr-2 inline h-4 w-4 text-rush-blue" />Usa ra ka reward matag local calendar day.</p></div>
           </div>
         </div>
       </Card>

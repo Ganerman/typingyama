@@ -1,4 +1,4 @@
-import { Activity, Flame, Gauge, Medal, Skull, Star, Target, Trophy, Zap } from 'lucide-react';
+import { Activity, Bug, Flame, Gauge, Medal, Skull, Star, Target, Trophy, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { WeeklyChart } from '../components/Charts';
 import { Card } from '../components/ui/Card';
@@ -73,6 +73,7 @@ export function DashboardPage() {
               ['/typing-test', 'Classic Typing Test', Gauge],
               ['/race', 'Typing Race', Trophy],
               ['/word-rain', 'Word Rain', Star],
+              ['/worm-words', 'Worm Words', Bug],
               ['/boss-battle', 'Boss Battle', Skull],
               ['/code', 'Code Typing Mode', Medal],
             ].map(([to, label, Icon]) => (

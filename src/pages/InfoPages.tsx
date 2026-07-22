@@ -237,13 +237,13 @@ export function HistoryPage() {
       <Card><p className="text-sm font-bold text-rush-green">Typing History</p><h1 className="text-3xl font-black text-white">Track improvements over time.</h1></Card>
       <Card>
         <div className="mb-4 flex flex-wrap gap-2">
-          {['All', 'Classic', 'Race', 'Word Rain', 'Code'].map((item) => <Button key={item} variant={mode === item ? 'primary' : 'ghost'} onClick={() => setMode(item)}>{item}</Button>)}
+          {['All', 'Classic', 'Race', 'Word Rain', 'Worm Words', 'Code', 'Daily Challenge'].map((item) => <Button key={item} variant={mode === item ? 'primary' : 'ghost'} onClick={() => setMode(item)}>{item}</Button>)}
         </div>
         {results.length === 0 ? <p className="rounded-lg border border-white/10 bg-white/5 p-6 text-slate-300">No local test history yet. Complete a classic test to log your first result.</p> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="text-xs uppercase text-slate-400"><tr>{['Date', 'Mode', 'Duration', 'WPM', 'Accuracy', 'Errors', 'XP', 'PB'].map((item) => <th key={item} className="px-3 py-3">{item}</th>)}</tr></thead>
-              <tbody>{results.map((result) => <tr key={result.completedAt} className="border-t border-white/10"><td className="px-3 py-3">{new Date(result.completedAt).toLocaleString()}</td><td className="px-3 py-3">{result.mode}</td><td className="px-3 py-3">{result.duration}s</td><td className="px-3 py-3">{result.wpm}</td><td className="px-3 py-3">{result.accuracy}%</td><td className="px-3 py-3">{result.incorrectCharacters}</td><td className="px-3 py-3">+{result.xpEarned}</td><td className="px-3 py-3">{result.wpm > 90 ? 'Yes' : '-'}</td></tr>)}</tbody>
+              <thead className="text-xs uppercase text-slate-400"><tr>{['Date', 'Mode', 'Duration', 'Performance', 'Accuracy', 'Errors', 'XP', 'PB'].map((item) => <th key={item} className="px-3 py-3">{item}</th>)}</tr></thead>
+              <tbody>{results.map((result) => <tr key={result.completedAt} className="border-t border-white/10"><td className="px-3 py-3">{new Date(result.completedAt).toLocaleString()}</td><td className="px-3 py-3">{result.mode}</td><td className="px-3 py-3">{result.duration}s</td><td className="px-3 py-3">{result.mode === 'Worm Words' ? `${result.score ?? 0} pts / ${result.wordsFound ?? 0} words` : `${result.wpm} WPM`}</td><td className="px-3 py-3">{result.accuracy}%</td><td className="px-3 py-3">{result.incorrectCharacters}</td><td className="px-3 py-3">+{result.xpEarned}</td><td className="px-3 py-3">{result.mode !== 'Worm Words' && result.wpm > 90 ? 'Yes' : '-'}</td></tr>)}</tbody>
             </table>
           </div>
         )}

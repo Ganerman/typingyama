@@ -6,6 +6,7 @@ export type GameMode =
   | 'Classic'
   | 'Race'
   | 'Word Rain'
+  | 'Worm Words'
   | 'Boss Battle'
   | 'Code'
   | 'Student'
@@ -52,6 +53,8 @@ export interface TypingResult {
   passed: boolean;
   completedAt: string;
   speedSeries: Array<{ second: number; wpm: number }>;
+  score?: number;
+  wordsFound?: number;
 }
 
 export interface Achievement {

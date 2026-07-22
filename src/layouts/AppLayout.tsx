@@ -1,4 +1,4 @@
-import { ArrowLeft, BarChart3, BookOpen, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
+import { ArrowLeft, BarChart3, BookOpen, Bug, CloudRain, Code2, Crown, Gauge, History, Home, Settings, Skull, Trophy, User, Zap } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,7 @@ const links = [
   { to: '/typing-test', label: 'Classic Test', icon: Gauge },
   { to: '/race', label: 'Typing Race', icon: Zap },
   { to: '/word-rain', label: 'Word Rain', icon: CloudRain },
+  { to: '/worm-words', label: 'Worm Words', icon: Bug },
   { to: '/boss-battle', label: 'Boss Battle', icon: Skull },
   { to: '/code', label: 'Code Mode', icon: Code2 },
   { to: '/student', label: 'Student Mode', icon: BarChart3 },

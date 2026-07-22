@@ -8,6 +8,7 @@ import { LandingPage } from './pages/LandingPage';
 import { TypingTestPage } from './pages/TypingTestPage';
 import { BossBattlePage } from './pages/BossBattlePage';
 import { LearningLibraryPage } from './pages/LearningLibraryPage';
+import { WormWordsPage } from './pages/WormWordsPage';
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
         <Route path="/typing-test" element={<TypingTestPage />} />
         <Route path="/race" element={<MultiplayerRacePage />} />
         <Route path="/word-rain" element={<WordRainPage />} />
+        <Route path="/worm-words" element={<WormWordsPage />} />
         <Route path="/boss-battle" element={<BossBattlePage />} />
         <Route path="/code" element={<CodeModePage />} />
         <Route path="/student" element={<StudentModePage />} />
